@@ -1,0 +1,18 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: el-{{ .Values.pipelineName }}
+  namespace: {{ .Values.pipelineNamespace }}
+  labels:
+    app.kubernetes.io/managed-by: EventListener
+    app.kubernetes.io/part-of: Triggers
+    eventlistener: {{ .Values.pipelineName }}
+spec:
+  host: el-{{ .Values.pipelineName }}.{{ .Values.domain }}
+  to:
+    kind: Service
+    name: el-{{ .Values.pipelineName }}
+    weight: 100
+  port:
+    targetPort: http-listener
+  wildcardPolicy: None

@@ -1,0 +1,6 @@
+#
+pipelineNamespace: pipelines
+imageRegistryNamespace: pipelines-image-registry
+
+# Trigger
+domain: apps.salmao.azureredhat.lab.seprol.com.br

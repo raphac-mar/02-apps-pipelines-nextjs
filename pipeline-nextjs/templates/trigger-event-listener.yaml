@@ -1,0 +1,31 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: {{ .Values.pipelineName }}
+  namespace: {{ .Values.pipelineNamespace }}
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - name: {{ .Values.pipelineName }}-trigger
+      bindings:
+      - ref: {{ .Values.pipelineName }}
+      template:
+        ref: {{ .Values.pipelineName }}
+      interceptors:
+        - ref:
+            name: "github"
+          params:
+            - name: "secretRef"
+              value:
+                secretName: github-secret
+                secretKey: secretToken
+            - name: "eventTypes"
+              value: ["push"]
+        - name: CelBranchName
+          ref:
+            name: cel
+          params:
+          - name: overlays
+            value:
+            - key: branch_name
+              expression: "body.ref.split('/')[2]"

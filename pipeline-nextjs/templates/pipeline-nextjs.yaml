@@ -1,0 +1,187 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: {{ .Values.pipelineName }}
+  namespace: {{ .Values.pipelineNamespace }}
+spec:
+  workspaces:
+    - name: shared-workspace
+      optional: false
+      description: |
+        Pipeline's workspace
+  params:
+    - name: pipelineStart
+      description: Pipeline start by webhook or pipeline-run?
+      type: string
+      default: webhook
+    #
+    - name: appName
+      description: App name.
+      type: string
+      default: ""
+    - name: appNamespace
+      description: App namespace.
+      type: string
+      default: ""
+    - name: imageRegistryNamespace
+      description: Image namespace.
+      type: string
+      default: ""
+    #
+    - name: repoUrl
+      type: string
+      description: The git repository URL to clone from.
+    - name: branchName
+      type: string
+      description: The git branch to clone.
+      default: "dev"
+    #
+    - name: patchDeploy
+      default: |
+        echo "-----------patch deploy-----------"
+        echo "oc patch deployment $(params.appName) --namespace=$(params.appNamespace) --patch='{\"spec\":{\"template\":{\"spec\":{
+          \"containers\":[{
+            \"name\": \"$(params.appName)\",
+            \"image\":\"image-registry.openshift-image-registry.svc:5000/$(params.imageRegistryNamespace)/$(params.appName):$(tasks.git-clone.results.commit)\"
+          }]
+        }}}}'"
+        oc patch deployment $(params.appName) --namespace=$(params.appNamespace) --patch='{"spec":{"template":{"spec":{
+          "containers":[{
+            "name": "$(params.appName)",
+            "image":"image-registry.openshift-image-registry.svc:5000/$(params.imageRegistryNamespace)/$(params.appName):$(tasks.git-clone.results.commit)"
+          }]
+        }}}}'
+        echo "-----------redeploy pods-----------"
+        patched_at_timestamp=`date +%s`
+        oc patch deployment $(params.appName) --namespace=$(params.appNamespace) --patch='{"spec":{"template":{"metadata":{
+          "labels":{
+            "patched_at": '\"$patched_at_timestamp\"'
+          }
+        }}}}'
+  tasks:
+    #
+    - name: pipeline-start
+      when:
+        - input: $(params.branchName)
+          operator: in
+          values:
+            - dev
+        - input: $(params.pipelineStart)
+          operator: in
+          values:
+            - webhook
+      taskSpec:
+        steps:
+          - name: read            
+            image: alpine:latest
+            script: |
+              #!/usr/bin/env sh
+              echo "branch: dev - pipelineStart: webhook"
+              echo "build não foi executado, porque o pipeline foi iniciado via webhook, no branch dev"
+              echo "para executar o build, inicie o pipeline via pipeline-run"
+    #
+    - name: git-clone
+      runAfter:
+        - pipeline-start
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+      params:
+        - name: url
+          value: $(params.repoUrl)
+        - name: revision
+          value: $(params.branchName)
+        - name: subdirectory
+          value: $(params.appName)-$(params.branchName)
+    #
+    - name: get-app-version
+      when:
+        - input: $(params.branchName)
+          operator: in
+          values:
+            - dev
+        - input: $(params.pipelineStart)
+          operator: in
+          values:
+            - pipeline-run
+      runAfter:
+        - git-clone
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: subdirectory
+          value: $(workspaces.source.path)/$(params.appName)-$(params.branchName)
+      taskSpec:
+        results:
+          - name: version
+            description: version
+        params:
+          - name: subdirectory
+        steps:
+          - name: read
+            env:
+              - name: PARAM_SUBDIR
+                value: $(params.subdirectory)
+            image: alpine:latest
+            script: |
+              #!/usr/bin/env sh
+              cat $PARAM_SUBDIR/package.json | grep \"version\" | cut -d'"' -f 4
+              RESULT_VERSION="$(cat $PARAM_SUBDIR/package.json | grep \"version\" | cut -d'"' -f 4)"
+              printf "%s" "${RESULT_VERSION}" > "$(results.version.path)"
+    #
+    - name: buildah
+      taskRef:
+        kind: ClusterTask
+        name: buildah
+      runAfter:
+        - get-app-version
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: IMAGE
+          value: image-registry.openshift-image-registry.svc:5000/$(params.imageRegistryNamespace)/$(params.appName):$(tasks.git-clone.results.commit)
+        - name: DOCKERFILE
+          value: ./$(params.appName)-$(params.branchName)/Dockerfile
+        - name: CONTEXT
+          value: ./$(params.appName)-$(params.branchName)
+        - name: BUILD_EXTRA_ARGS
+          value: --build-arg=VERSION_ARG=$(tasks.get-app-version.results.version)
+        - name: TLSVERIFY
+          value: false
+    #
+    - name: oc-update-deploy-dev
+      taskRef:
+        kind: ClusterTask
+        name: openshift-client
+      runAfter:
+        - "buildah"
+      workspaces:
+        - name: manifest-dir
+          workspace: shared-workspace
+      params:
+        - name: SCRIPT
+          value: $(params.patchDeploy)
+    #
+    - name: oc-update-deploy-homolog-prod
+      when:
+        - input: $(params.branchName)
+          operator: in
+          values:
+            - homolog
+            - prod
+      taskRef:
+        kind: ClusterTask
+        name: openshift-client
+      runAfter:
+        - git-clone
+      workspaces:
+        - name: manifest-dir
+          workspace: shared-workspace
+      params:
+        - name: SCRIPT
+          value: $(params.patchDeploy)

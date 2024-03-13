@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: 02-apps-pipelines-nextjs
+  namespace: openshift-gitops
+spec:
+  destination:
+    server: "https://kubernetes.default.svc"
+  project: default
+  source:
+    path: pipeline-nextjs
+    repoURL: "https://github.com/raphac-mar/02-apps-pipelines-nextjs"
+    targetRevision: HEAD
+    helm:
+      values: "pipelineName: pipeline-nextjs"
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
