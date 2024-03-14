@@ -1,6 +1,5 @@
 # Pipeline framework nextjs e triggers
 
-- Nível cluster
 - Git: `https://github.com/raphac-mar/02-apps-pipelines-nextjs`
 
 ## Argo CD
