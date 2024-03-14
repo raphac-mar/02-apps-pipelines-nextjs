@@ -6,7 +6,6 @@ metadata:
 spec:
   workspaces:
     - name: shared-workspace
-      optional: false
       description: |
         Pipeline's workspace
   params:
