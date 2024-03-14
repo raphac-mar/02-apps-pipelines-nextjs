@@ -66,9 +66,12 @@ spec:
           values:
             - webhook
       taskSpec:
+        metadata: {}	
+        spec: null
         steps:
-          - name: read            
-            image: alpine:latest
+          - computeResources: {}	
+            image: 'alpine:latest'
+            name: read            
             script: |
               #!/usr/bin/env sh
               echo "branch: dev - pipelineStart: webhook"
@@ -111,13 +114,18 @@ spec:
         - name: subdirectory
           value: $(workspaces.source.path)/$(params.appName)-$(params.branchName)
       taskSpec:
+        metadata: {}
+        spec: null
         results:
           - name: version
             description: version
+            type: string
         params:
           - name: subdirectory
+            type: string
         steps:
-          - name: read
+          - computeResources: {}
+            name: read
             env:
               - name: PARAM_SUBDIR
                 value: $(params.subdirectory)
@@ -147,7 +155,7 @@ spec:
         - name: BUILD_EXTRA_ARGS
           value: --build-arg=VERSION_ARG=$(tasks.get-app-version.results.version)
         - name: TLSVERIFY
-          value: false
+          value: 'false'
     #
     - name: oc-update-deploy-dev
       taskRef:
