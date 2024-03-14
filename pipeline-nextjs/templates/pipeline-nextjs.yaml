@@ -38,21 +38,16 @@ spec:
     #
     - name: patchDeploy
       default: |
-        echo "-----------patch deploy-----------"
-        echo "oc patch deployment $(params.appName) --namespace=$(params.appNamespace) --patch='{\"spec\":{\"template\":{\"spec\":{
-          \"containers\":[{
-            \"name\": \"$(params.appName)\",
-            \"image\":\"image-registry.openshift-image-registry.svc:5000/$(params.imageRegistryNamespace)/$(params.appName):$(tasks.git-clone.results.commit)\"
-          }]
-        }}}}'"
-        oc patch deployment $(params.appName) --namespace=$(params.appNamespace) --patch='{"spec":{"template":{"spec":{
-          "containers":[{
-            "name": "$(params.appName)",
-            "image":"image-registry.openshift-image-registry.svc:5000/$(params.imageRegistryNamespace)/$(params.appName):$(tasks.git-clone.results.commit)"
-          }]
-        }}}}'
-        echo "-----------redeploy pods-----------"
+        echo "----------- Adds additional name 'latest' to new image build"
+        echo "oc tag $(params.appName):$(tasks.git-clone.results.commit) $(params.appName):latest -n $(params.imageRegistryNamespace)"
+        oc tag $(params.appName):$(tasks.git-clone.results.commit) $(params.appName):latest -n $(params.imageRegistryNamespace)
+        echo "----------- Redeploy pods"
         patched_at_timestamp=`date +%s`
+        echo "oc patch deployment $(params.appName) --namespace=$(params.appNamespace) --patch='{\"spec\":{\"template\":{\"metadata\":{
+          \"labels\":{
+            \"patched_at\": '\"$patched_at_timestamp\"'
+          }
+        }}}}'"
         oc patch deployment $(params.appName) --namespace=$(params.appNamespace) --patch='{"spec":{"template":{"metadata":{
           "labels":{
             "patched_at": '\"$patched_at_timestamp\"'
