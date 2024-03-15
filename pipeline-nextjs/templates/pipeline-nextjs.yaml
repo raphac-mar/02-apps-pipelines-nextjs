@@ -200,11 +200,11 @@ spec:
             #!/usr/bin/env sh
             #ssh -T git@github.com
             set -e
-            cd $(params.subdirectory)
+            cd $(workspaces.source.path)/$(params.appName)-infra
 
-            git config --global --add safe.directory $(params.subdirectory)
-            git config --global user.email "raphac@gmail.com"
-            git config --global user.name "raphac-mar"
+            git config --global --add safe.directory $(workspaces.source.path)/$(params.appName)-infra
+            #git config --global user.email "raphac@gmail.com"
+            #git config --global user.name "raphac-mar"
             ssh -T git@github.com
             git remote set-url origin git@github.com:raphac-mar/03-app-k8s.git
 
