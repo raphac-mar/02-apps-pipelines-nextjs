@@ -232,6 +232,8 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+        - name: ssh-directory
+          workspace: git-credentials
     #
     - name: oc-update-deploy-dev
       taskRef:
