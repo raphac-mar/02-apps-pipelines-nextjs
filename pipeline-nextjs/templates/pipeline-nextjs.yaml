@@ -210,7 +210,8 @@ spec:
         - name: GIT_SCRIPT
           value: |
             cd $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
-            git help
+            git commit -am "tekton"
+            #git help
       workspaces:
         - name: source
           workspace: shared-workspace
