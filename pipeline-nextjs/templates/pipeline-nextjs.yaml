@@ -221,6 +221,7 @@ spec:
             git switch dev
             git status
             git commit -am "tekton"
+            git push -u origin dev
             #git help
       workspaces:
         - name: source
