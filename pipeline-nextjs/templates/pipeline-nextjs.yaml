@@ -200,7 +200,6 @@ spec:
               cat $(params.subdirectory)/values.yaml
     #
     - name: use-git-cli
-      serviceAccountName: build-bot
       runAfter:
         - update-helm-repo-image-tag
       taskRef:
