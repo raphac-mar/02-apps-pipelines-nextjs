@@ -207,12 +207,14 @@ spec:
         kind: ClusterTask
         name: git-cli
       params:
+        - name: GIT_USER_NAME
+          value: raphac-mar
+        - name: GIT_USER_EMAIL
+          value: raphac@gmail.com
         - name: GIT_SCRIPT
           value: |
+            #git config --global --add safe.directory $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
             cd $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
-            git config --global user.name "raphac-mar"
-            git config --global user.email raphac@gmail.com
-            git config --global --add safe.directory $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
             git commit -am "tekton"
             #git help
       workspaces:
