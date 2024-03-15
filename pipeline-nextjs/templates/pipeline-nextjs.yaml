@@ -214,10 +214,9 @@ spec:
         - name: GIT_SCRIPT
           value: |
             git config --global --add safe.directory /workspace/source/admin-dashboard-infra
-            ls
-            echo $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
             cd $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
             ls
+            cat values.yaml
             git branch
             git switch dev
             git status
