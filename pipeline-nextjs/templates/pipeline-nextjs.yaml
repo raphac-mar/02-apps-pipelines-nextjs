@@ -8,6 +8,7 @@ spec:
     - name: shared-workspace
       description: |
         Pipeline's workspace
+    - name: ssh-creds
   params:
     - name: pipelineStart
       description: Pipeline start by webhook or pipeline-run?
@@ -205,18 +206,12 @@ spec:
       taskRef:
         kind: ClusterTask
         name: git-cli
-      workspaces:
-        - name: ssh-creds
-          secret:
-            secretName: github-ssh-key
-        - name: source
-          workspace: shared-workspace
       params:
         - name: subdirectory
           value: $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
         - name: GIT_SCRIPT
           value: |
-            cd $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
+            cd $(params.subdirectory)
             ls
             git status
             #git init
