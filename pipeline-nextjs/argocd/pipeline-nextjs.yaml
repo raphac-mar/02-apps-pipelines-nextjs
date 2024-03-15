@@ -4,12 +4,13 @@ metadata:
   name: {{ .Values.pipelineName }}
   namespace: {{ .Values.pipelineNamespace }}
 spec:
+  #
   workspaces:
     - name: shared-workspace
-      description: |
-        Pipeline's workspace
+      description: Pipeline's workspace
     - name: git-credentials
-      description: My ssh credentials
+      description: ssh github credentials
+  #
   params:
     - name: pipelineStart
       description: Pipeline start by webhook or pipeline-run?
@@ -36,24 +37,7 @@ spec:
       type: string
       description: The git branch to clone.
       default: "dev"
-    #
-    - name: patchDeploy
-      default: |
-        echo "----------- Adds additional name 'latest' to new image build"
-        echo "oc tag $(params.appName):$(tasks.git-clone.results.commit) $(params.appName):latest -n $(params.imageRegistryNamespace)"
-        oc tag $(params.appName):$(tasks.git-clone.results.commit) $(params.appName):latest -n $(params.imageRegistryNamespace)
-        echo "----------- Redeploy pods"
-        patched_at_timestamp=`date +%s`
-        echo "oc patch deployment $(params.appName) --namespace=$(params.appNamespace) --patch='{\"spec\":{\"template\":{\"metadata\":{
-          \"labels\":{
-            \"patched_at\": '\"$patched_at_timestamp\"'
-          }
-        }}}}'"
-        oc patch deployment $(params.appName) --namespace=$(params.appNamespace) --patch='{"spec":{"template":{"metadata":{
-          "labels":{
-            "patched_at": '\"$patched_at_timestamp\"'
-          }
-        }}}}'
+  #
   tasks:
     #
     - name: pipeline-start
@@ -193,15 +177,50 @@ spec:
         steps:
           - computeResources: {}
             image: 'alpine:latest'
-            name: build
+            name: update-helm-repo
             script: |
-              #https://tekton.dev/docs/pipelines/auth/
               #!/usr/bin/env sh
               cat $(params.subdirectory)/values.yaml
               sed -i 's+tag: [[:graph:]]*+tag: $(tasks.git-clone.results.commit)+g' $(params.subdirectory)/values.yaml
               cat $(params.subdirectory)/values.yaml
     #
     - name: use-git-cli
+      runAfter:
+        - update-helm-repo-image-tag
+      taskRef:
+        kind: ClusterTask
+        name: git-cli
+      params:
+        - name: GIT_USER_NAME
+          value: raphac-mar
+        - name: GIT_USER_EMAIL
+          value: raphac@gmail.com
+        - name: GIT_SCRIPT
+          value: |
+            #!/usr/bin/env sh
+            #ssh -T git@github.com
+            set -e
+            cd $(workspaces.source.path)/$(params.appName)-infra
+
+            git config --global --add safe.directory $(workspaces.source.path)/$(params.appName)-infra
+            #git config --global user.email "raphac@gmail.com"
+            #git config --global user.name "raphac-mar"
+            #ssh -T git@github.com
+            git remote set-url origin git@github.com:raphac-mar/03-app-k8s.git
+
+            git switch dev
+            git status
+            git add .
+            git commit -am "openshift gitops"
+            ssh -T git@github.com
+            git push
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: git-credentials
+    #
+    - name: git-cli-push-repo
       runAfter:
         - update-helm-repo-image-tag
       params:
@@ -221,16 +240,24 @@ spec:
         steps:
           - computeResources: {}
             image: 'alpine/git:v2.40.1'
-            name: build
+            name: git-cli-push
             script: |
               #!/usr/bin/env sh
+
+              cp -R /workspace/ssh-directory /root/.ssh
+              chmod 700 /root/.ssh
+              chmod -R 400 /root/.ssh/id_rsa /root/.ssh/known_hosts /root/.ssh/ssh-privatekey
               ssh -T git@github.com
+
+              git config --global user.email raphac@gmail.com
+              git config --global user.name raphac-mar
               set -e
               cd $(params.subdirectory)
 
               git config --global --add safe.directory $(params.subdirectory)
-              git config --global user.email "raphac@gmail.com"
-              git config --global user.name "raphac-mar"
+              #git config --global user.email "raphac@gmail.com"
+              #git config --global user.name "raphac-mar"
+              
               git remote set-url origin git@github.com:raphac-mar/03-app-k8s.git
 
               git switch dev
