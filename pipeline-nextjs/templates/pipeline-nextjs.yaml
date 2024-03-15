@@ -226,9 +226,10 @@ spec:
               #!/usr/bin/env sh
               ssh -T git@github.com
               git config --global --add safe.directory /workspace/source/admin-dashboard-infra
+              git config --global user.email "raphac@gmail.com"
+              git config --global user.name "raphac-mar"
               cd $(params.subdirectory)
               ls
-              cat values.yaml
               git branch
               git switch dev
               git status
