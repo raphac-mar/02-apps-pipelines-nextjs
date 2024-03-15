@@ -210,6 +210,8 @@ spec:
         - name: GIT_SCRIPT
           value: |
             cd $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
+            git config --global user.name "raphac-mar"
+            git config --global user.email raphac@gmail.com
             git config --global --add safe.directory $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
             git commit -am "tekton"
             #git help
