@@ -1,4 +1,4 @@
-# Pipeline framework nextjs e triggers
+# Criar o pipeline (esteira) e as triggers, para o framework nextjs
 
 - Git: `https://github.com/raphac-mar/02-apps-pipelines-nextjs`
 
@@ -7,6 +7,8 @@
 ```sh
 cd 02-apps-pipelines-nextjs/pipeline-nextjs
 oc apply -f argocd/application.yaml
+
+oc delete Application 02-apps-pipelines-nextjs -n openshift-gitops
 ```
 
 - https://tekton.dev/docs/pipelines/auth/#configuring-ssh-auth-authentication-for-git
