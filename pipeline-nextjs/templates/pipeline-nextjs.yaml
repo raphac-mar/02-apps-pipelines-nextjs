@@ -225,6 +225,7 @@ spec:
             script: |
               #!/usr/bin/env sh
               ssh -T git@github.com
+              git config --global --add safe.directory /workspace/source/admin-dashboard-infra
               cd $(params.subdirectory)
               ls
               cat values.yaml
