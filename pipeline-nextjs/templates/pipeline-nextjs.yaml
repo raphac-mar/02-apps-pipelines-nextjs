@@ -207,16 +207,13 @@ spec:
         kind: ClusterTask
         name: git-cli
       params:
-        - name: subdirectory
-          value: $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
         - name: GIT_SCRIPT
           value: |
-            cd $(params.subdirectory)
-            ls
-            git status
-            #git init
-            #git remote add origin https://github.com/kelseyhightower/nocode
-            #git pull origin master
+            cd $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
+            git help
+      workspaces:
+        - name: source
+          workspace: shared-workspace
     #
     - name: oc-update-deploy-dev
       taskRef:
