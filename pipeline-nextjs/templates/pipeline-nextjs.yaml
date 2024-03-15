@@ -216,7 +216,8 @@ spec:
         - name: GIT_SCRIPT
           value: |
             #git config --global --add safe.directory $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
-            #cd $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
+            ls
+            cd /$(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
             git status
             git commit -am "tekton"
             #git help
