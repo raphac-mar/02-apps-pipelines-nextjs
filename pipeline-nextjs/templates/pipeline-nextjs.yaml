@@ -213,7 +213,7 @@ spec:
           value: raphac@gmail.com
         - name: GIT_SCRIPT
           value: |
-            #git config --global --add safe.directory $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
+            git config --global --add safe.directory /workspace/source/admin-dashboard-infra
             ls
             echo $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
             cd $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
