@@ -242,14 +242,21 @@ spec:
             name: git-cli-push
             script: |
               #!/usr/bin/env sh
-              #ssh -T git@github.com
+
+              cp -R /workspace/ssh-directory /root/.ssh
+              chmod 700 /root/.ssh
+              chmod -R 400 /root/.ssh/id_rsa /root/.ssh/known_hosts /root/.ssh/ssh-privatekey
+              ssh -T git@github.com
+
+              git config --global user.email raphac@gmail.com
+              git config --global user.name raphac-mar
               set -e
               cd $(params.subdirectory)
 
               git config --global --add safe.directory $(params.subdirectory)
-              git config --global user.email "raphac@gmail.com"
-              git config --global user.name "raphac-mar"
-              ssh -T git@github.com
+              #git config --global user.email "raphac@gmail.com"
+              #git config --global user.name "raphac-mar"
+              
               git remote set-url origin git@github.com:raphac-mar/03-app-k8s.git
 
               git switch dev
