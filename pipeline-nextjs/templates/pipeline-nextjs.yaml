@@ -206,7 +206,7 @@ spec:
         - update-helm-repo-image-tag
       params:
         - name: subdirectory
-          value: $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
+          value: $(workspaces.source.path)/$(params.appName)-infra
       workspaces:
         - name: source
           workspace: shared-workspace
@@ -224,19 +224,19 @@ spec:
             name: build
             script: |
               #!/usr/bin/env sh
+              ssh -T git@github.com
               set -e
-              git config --global --add safe.directory /workspace/source/admin-dashboard-infra
+              cd $(params.subdirectory)
+
+              git config --global --add safe.directory $(params.subdirectory)
               git config --global user.email "raphac@gmail.com"
               git config --global user.name "raphac-mar"
-              ssh -T git@github.com
-              cd $(params.subdirectory)
-              ls
-              git branch
-              git checkout dev
+              git remote set-url origin git@github.com:raphac-mar/03-app-k8s.git
+
               git status
               git add .
-              git commit -am "tekton"
-              git push origin dev
+              git commit -am "openshift gitops"
+              git push
     #
     - name: oc-update-deploy-dev
       taskRef:
