@@ -224,17 +224,17 @@ spec:
             name: build
             script: |
               #!/usr/bin/env sh
-              ssh -T git@github.com
+              set -e
               git config --global --add safe.directory /workspace/source/admin-dashboard-infra
               git config --global user.email "raphac@gmail.com"
               git config --global user.name "raphac-mar"
               cd $(params.subdirectory)
               ls
+              git add .
               git branch
-              git switch dev
+              git checkout dev
               git status
-              git commit -am 'tekton'
-              git status
+              git commit -am "tekton"
               git push -u origin dev
     #
     - name: oc-update-deploy-dev
