@@ -233,39 +233,8 @@ spec:
               git config --global user.name "raphac-mar"
               git remote set-url origin git@github.com:raphac-mar/03-app-k8s.git
 
+              git switch dev
               git status
               git add .
               git commit -am "openshift gitops"
               git push
-    #
-    - name: oc-update-deploy-dev
-      taskRef:
-        kind: ClusterTask
-        name: openshift-client
-      runAfter:
-        - "buildah"
-      workspaces:
-        - name: manifest-dir
-          workspace: shared-workspace
-      params:
-        - name: SCRIPT
-          value: $(params.patchDeploy)
-    #
-    - name: oc-update-deploy-homolog-prod
-      when:
-        - input: $(params.branchName)
-          operator: in
-          values:
-            - homolog
-            - prod
-      taskRef:
-        kind: ClusterTask
-        name: openshift-client
-      runAfter:
-        - git-clone
-      workspaces:
-        - name: manifest-dir
-          workspace: shared-workspace
-      params:
-        - name: SCRIPT
-          value: $(params.patchDeploy)
