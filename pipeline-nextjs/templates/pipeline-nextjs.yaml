@@ -8,7 +8,8 @@ spec:
     - name: shared-workspace
       description: |
         Pipeline's workspace
-    - name: ssh-creds
+    - name: git-credentials
+      description: My ssh credentials
   params:
     - name: pipelineStart
       description: Pipeline start by webhook or pipeline-run?
@@ -183,6 +184,8 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
+        - name: ssh-directory
+          workspace: git-credentials
       taskSpec:
         metadata: {}
         params:
