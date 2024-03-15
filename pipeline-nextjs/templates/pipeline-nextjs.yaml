@@ -204,35 +204,36 @@ spec:
     - name: use-git-cli
       runAfter:
         - update-helm-repo-image-tag
-      taskRef:
-        kind: ClusterTask
-        name: git-cli
       params:
-        - name: GIT_USER_NAME
-          value: raphac-mar
-        - name: GIT_USER_EMAIL
-          value: raphac@gmail.com
-        - name: GIT_SCRIPT
-          value: |
-            git config --global --add safe.directory /workspace/source/admin-dashboard-infra
-            ssh -T git@github.com
-            #git config --global user.email "raphac@gmail.com"
-            #git config --global user.name "raphac-mar"
-            cd $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
-            ls
-            cat values.yaml
-            git branch
-            git switch dev
-            git status
-            git commit -am 'tekton'
-            git status
-            git push -u origin dev
-            #git help
+        - name: subdirectory
+          value: $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
       workspaces:
         - name: source
           workspace: shared-workspace
         - name: ssh-directory
           workspace: git-credentials
+      taskSpec:
+        metadata: {}
+        params:
+          - name: subdirectory
+            type: string
+        spec: null
+        steps:
+          - computeResources: {}
+            image: 'alpine/git:v2.40.1'
+            name: build
+            script: |
+              #!/usr/bin/env sh
+              ssh -T git@github.com
+              cd $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
+              ls
+              cat values.yaml
+              git branch
+              git switch dev
+              git status
+              git commit -am 'tekton'
+              git status
+              git push -u origin dev
     #
     - name: oc-update-deploy-dev
       taskRef:
