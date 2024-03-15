@@ -43,3 +43,6 @@ spec:
       - name: shared-workspace
         persistentVolumeClaim:
           claimName: shared-workspace-pvc
+      - name: git-credentials
+        secret:
+          secretName: git-credentials
