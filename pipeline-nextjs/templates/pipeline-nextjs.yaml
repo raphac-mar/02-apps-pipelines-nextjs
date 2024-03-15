@@ -8,7 +8,8 @@ spec:
     - name: shared-workspace
       description: |
         Pipeline's workspace
-    - name: basic-auth
+    - name: git-credentials
+      description: My ssh credentials
   params:
     - name: pipelineStart
       description: Pipeline start by webhook or pipeline-run?
@@ -214,8 +215,9 @@ spec:
         - name: GIT_SCRIPT
           value: |
             git config --global --add safe.directory /workspace/source/admin-dashboard-infra
-            git config --global user.email "raphac@gmail.com"
-            git config --global user.name "raphac-mar"
+            ssh -T git@github.com
+            #git config --global user.email "raphac@gmail.com"
+            #git config --global user.name "raphac-mar"
             cd $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
             ls
             cat values.yaml
@@ -229,8 +231,8 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-        - name: basic-auth
-          workspace: basic-auth
+        - name: ssh-directory
+          workspace: git-credentials
     #
     - name: oc-update-deploy-dev
       taskRef:
