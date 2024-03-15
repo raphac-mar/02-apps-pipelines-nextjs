@@ -216,6 +216,7 @@ spec:
             #git config --global --add safe.directory $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
             ls
             cd $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
+            ls
             git status
             git commit -am "tekton"
             #git help
