@@ -8,7 +8,7 @@ spec:
   workspaces:
     - name: shared-workspace
       description: Pipeline's workspace
-    - name: github-credentials-secret
+    - name: git-credentials
       description: ssh github credentials
   #
   params:
@@ -193,8 +193,8 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-        - name: github-ssh-directory
-          workspace: github-credentials-secret
+        - name: ssh-directory
+          workspace: git-credentials
       taskSpec:
         metadata: {}
         params:

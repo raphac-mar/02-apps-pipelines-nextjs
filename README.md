@@ -14,3 +14,10 @@ oc apply -f argocd/application.yaml
 - https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
 - https://docs.github.com/en/authentication/connecting-to-github-with-ssh/testing-your-ssh-connection
 - https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account?platform=windows&tool=webui
+
+```
+ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+cat .ssh/known_hosts | base64 -w0
+
+
+```
