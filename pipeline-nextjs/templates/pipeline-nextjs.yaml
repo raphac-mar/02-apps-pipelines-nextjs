@@ -4,12 +4,13 @@ metadata:
   name: {{ .Values.pipelineName }}
   namespace: {{ .Values.pipelineNamespace }}
 spec:
+  #
   workspaces:
     - name: shared-workspace
-      description: |
-        Pipeline's workspace
-    - name: git-credentials
-      description: My ssh credentials
+      description: Pipeline's workspace
+    - name: github-credentials-secret
+      description: ssh github credentials
+  #
   params:
     - name: pipelineStart
       description: Pipeline start by webhook or pipeline-run?
@@ -36,24 +37,7 @@ spec:
       type: string
       description: The git branch to clone.
       default: "dev"
-    #
-    - name: patchDeploy
-      default: |
-        echo "----------- Adds additional name 'latest' to new image build"
-        echo "oc tag $(params.appName):$(tasks.git-clone.results.commit) $(params.appName):latest -n $(params.imageRegistryNamespace)"
-        oc tag $(params.appName):$(tasks.git-clone.results.commit) $(params.appName):latest -n $(params.imageRegistryNamespace)
-        echo "----------- Redeploy pods"
-        patched_at_timestamp=`date +%s`
-        echo "oc patch deployment $(params.appName) --namespace=$(params.appNamespace) --patch='{\"spec\":{\"template\":{\"metadata\":{
-          \"labels\":{
-            \"patched_at\": '\"$patched_at_timestamp\"'
-          }
-        }}}}'"
-        oc patch deployment $(params.appName) --namespace=$(params.appNamespace) --patch='{"spec":{"template":{"metadata":{
-          "labels":{
-            "patched_at": '\"$patched_at_timestamp\"'
-          }
-        }}}}'
+  #
   tasks:
     #
     - name: pipeline-start
@@ -193,15 +177,14 @@ spec:
         steps:
           - computeResources: {}
             image: 'alpine:latest'
-            name: build
+            name: update-helm-repo
             script: |
-              #https://tekton.dev/docs/pipelines/auth/
               #!/usr/bin/env sh
               cat $(params.subdirectory)/values.yaml
               sed -i 's+tag: [[:graph:]]*+tag: $(tasks.git-clone.results.commit)+g' $(params.subdirectory)/values.yaml
               cat $(params.subdirectory)/values.yaml
     #
-    - name: use-git-cli
+    - name: git-cli-push-repo
       runAfter:
         - update-helm-repo-image-tag
       params:
@@ -210,8 +193,8 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-        - name: ssh-directory
-          workspace: git-credentials
+        - name: github-ssh-directory
+          workspace: github-credentials-secret
       taskSpec:
         metadata: {}
         params:
@@ -221,7 +204,7 @@ spec:
         steps:
           - computeResources: {}
             image: 'alpine/git:v2.40.1'
-            name: build
+            name: git-cli-push
             script: |
               #!/usr/bin/env sh
               ssh -T git@github.com
