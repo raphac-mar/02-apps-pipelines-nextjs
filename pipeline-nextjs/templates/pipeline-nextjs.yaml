@@ -205,13 +205,14 @@ spec:
             git config --global --add safe.directory $(workspaces.source.path)/$(params.appName)-infra
             #git config --global user.email "raphac@gmail.com"
             #git config --global user.name "raphac-mar"
-            ssh -T git@github.com
+            #ssh -T git@github.com
             git remote set-url origin git@github.com:raphac-mar/03-app-k8s.git
 
             git switch dev
             git status
             git add .
             git commit -am "openshift gitops"
+            ssh -T git@github.com
             git push
       workspaces:
         - name: source
