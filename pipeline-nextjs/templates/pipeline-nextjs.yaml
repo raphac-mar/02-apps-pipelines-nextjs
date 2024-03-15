@@ -230,12 +230,12 @@ spec:
               git config --global user.name "raphac-mar"
               cd $(params.subdirectory)
               ls
-              git add .
               git branch
               git checkout dev
               git status
+              git add .
               git commit -am "tekton"
-              git push -u origin dev
+              git push origin dev
     #
     - name: oc-update-deploy-dev
       taskRef:
