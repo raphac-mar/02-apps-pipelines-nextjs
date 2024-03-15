@@ -218,6 +218,8 @@ spec:
             echo $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
             cd $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
             ls
+            git branch
+            git switch dev
             git status
             git commit -am "tekton"
             #git help
