@@ -10,6 +10,9 @@ spec:
         Pipeline's workspace
     - name: git-credentials
       description: My ssh credentials
+    - name: basic-auth
+      secret:
+        secretName: git-03-app-k-8-s-token-6bpvk
   params:
     - name: pipelineStart
       description: Pipeline start by webhook or pipeline-run?
@@ -184,8 +187,6 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-        - name: ssh-directory
-          workspace: git-credentials
       taskSpec:
         metadata: {}
         params:
@@ -232,8 +233,7 @@ spec:
       workspaces:
         - name: source
           workspace: shared-workspace
-        - name: ssh-directory
-          workspace: git-credentials
+        - name: basic-auth
     #
     - name: oc-update-deploy-dev
       taskRef:
