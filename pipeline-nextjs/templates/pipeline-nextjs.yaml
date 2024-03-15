@@ -228,6 +228,7 @@ spec:
               git config --global --add safe.directory /workspace/source/admin-dashboard-infra
               git config --global user.email "raphac@gmail.com"
               git config --global user.name "raphac-mar"
+              ssh -T git@github.com
               cd $(params.subdirectory)
               ls
               git branch
