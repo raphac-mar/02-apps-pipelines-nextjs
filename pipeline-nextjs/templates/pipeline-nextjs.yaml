@@ -225,7 +225,7 @@ spec:
             script: |
               #!/usr/bin/env sh
               ssh -T git@github.com
-              cd $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
+              cd $(params.subdirectory)
               ls
               cat values.yaml
               git branch
