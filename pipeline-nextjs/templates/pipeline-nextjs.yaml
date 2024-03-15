@@ -184,6 +184,41 @@ spec:
               sed -i 's+tag: [[:graph:]]*+tag: $(tasks.git-clone.results.commit)+g' $(params.subdirectory)/values.yaml
               cat $(params.subdirectory)/values.yaml
     #
+    - name: use-git-cli
+      runAfter:
+        - update-helm-repo-image-tag
+      taskRef:
+        kind: ClusterTask
+        name: git-cli
+      params:
+        - name: GIT_USER_NAME
+          value: raphac-mar
+        - name: GIT_USER_EMAIL
+          value: raphac@gmail.com
+        - name: GIT_SCRIPT
+          value: |
+            #!/usr/bin/env sh
+            #ssh -T git@github.com
+            set -e
+            cd $(params.subdirectory)
+
+            git config --global --add safe.directory $(params.subdirectory)
+            git config --global user.email "raphac@gmail.com"
+            git config --global user.name "raphac-mar"
+            ssh -T git@github.com
+            git remote set-url origin git@github.com:raphac-mar/03-app-k8s.git
+
+            git switch dev
+            git status
+            git add .
+            git commit -am "openshift gitops"
+            git push
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+        - name: ssh-directory
+          workspace: git-credentials
+    #
     - name: git-cli-push-repo
       runAfter:
         - update-helm-repo-image-tag
@@ -207,7 +242,7 @@ spec:
             name: git-cli-push
             script: |
               #!/usr/bin/env sh
-              ssh -T git@github.com
+              #ssh -T git@github.com
               set -e
               cd $(params.subdirectory)
 
