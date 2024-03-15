@@ -214,13 +214,16 @@ spec:
         - name: GIT_SCRIPT
           value: |
             git config --global --add safe.directory /workspace/source/admin-dashboard-infra
+            git config --global user.email "raphac@gmail.com"
+            git config --global user.name "raphac-mar"
             cd $(workspaces.source.path)/$(params.appName)-infra/admin-dashboard
             ls
             cat values.yaml
             git branch
             git switch dev
             git status
-            git commit -am "tekton"
+            git commit -am 'tekton'
+            git status
             git push -u origin dev
             #git help
       workspaces:
